@@ -1,0 +1,4 @@
+name,email,company,size,budget,urgency_days,message
+Ada Chen,ada@northstar.example,Northstar Studio,12,2500,7,"We need to automate inbound forms, lead routing and HubSpot updates."
+Ben Lee,ben@gmail.com,,1,100,60,"Just exploring options."
+Mira Tan,mira@atlas.example,Atlas Advisory,8,1000,10,"Our team manually copies enquiries into Sheets and forgets follow-ups."
