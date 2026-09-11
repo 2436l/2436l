@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LeadFlow AI Demo</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111827;background:#f8fafc}
+body{margin:0}.wrap{max-width:1000px;margin:40px auto;padding:0 20px}.hero{margin-bottom:24px}
+h1{font-size:40px;margin:0 0 8px}p{line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}input,textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;font:inherit}
+textarea{min-height:110px;resize:vertical}button{margin-top:16px;border:0;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#111827;color:#fff}
+.score{font-size:54px;font-weight:800;margin:6px 0}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#e2e8f0;font-weight:700;font-size:12px}
+pre{white-space:pre-wrap;background:#f1f5f9;padding:14px;border-radius:12px;overflow:auto}.muted{color:#64748b;font-size:13px}ul{padding-left:18px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero"><span class="pill">LeadFlow AI • interactive MVP</span><h1>Qualify inbound leads before sales opens the inbox.</h1><p>Demo: validation, deterministic lead scoring, routing, duplicate fingerprinting and personalized follow-up draft.</p></div>
+<div class="grid">
+<div class="card">
+<h2>Incoming lead</h2>
+<label>Name</label><input id="name" value="Ada Chen" />
+<label>Email</label><input id="email" value="ada@northstar.example" />
+<label>Company</label><input id="company" value="Northstar Studio" />
+<label>Company size</label><input id="size" type="number" value="12" />
+<label>Budget (USD)</label><input id="budget" type="number" value="2500" />
+<label>Urgency (days)</label><input id="urgency" type="number" value="7" />
+<label>Pain / request</label><textarea id="message">We need to automate inbound forms, lead routing and HubSpot updates. Our team is doing this manually.</textarea>
+<button onclick="runLead()">Process lead</button><div class="muted">No data leaves this page.</div>
+</div>
+<div class="card">
+<h2>Qualification result</h2><div class="score" id="score">—</div><div class="pill" id="route">Waiting</div>
+<h3>Why</h3><ul id="reasons"></ul><h3>Duplicate fingerprint</h3><pre id="fp">—</pre><h3>Follow-up draft</h3><pre id="draft">—</pre>
+</div>
+</div>
+</div>
+<script>
+function tinyHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(16).padStart(8,'0')}
+function runLead(){
+ const g=id=>document.getElementById(id).value.trim();
+ const name=g('name'),email=g('email'),company=g('company'),message=g('message');
+ const size=Number(g('size')||0),budget=Number(g('budget')||0),urgency=Number(g('urgency')||999);
+ let s=0,reasons=[];
+ const businessEmail=email.includes('@')&&!/(gmail|yahoo|hotmail|outlook)\./i.test(email);
+ if(businessEmail){s+=10;reasons.push('+10 business email')}
+ if(company){s+=10;reasons.push('+10 company identified')}
+ if(size>=2&&size<=100){s+=15;reasons.push('+15 target company size')}
+ if(budget>=500){s+=20;reasons.push('+20 viable budget')}
+ if(urgency<=14){s+=15;reasons.push('+15 near-term urgency')}
+ if(/automat|api|crm|manual|repet|workflow|hubspot|sheet/i.test(message)){s+=20;reasons.push('+20 automation pain signal')}
+ if(message.length>=60){s+=10;reasons.push('+10 detailed problem statement')}
+ s=Math.min(100,s);
+ const route=s>=75?'HOT — notify sales now':s>=50?'WARM — nurture':'COLD — low-touch follow-up';
+ const fp=tinyHash((email+'|'+company).toLowerCase());
+ const first=name.split(' ')[0]||'there';
+ const draft=`Hi ${first},
+
+Thanks for reaching out. Based on what you shared about ${company||'your team'}, the fastest first step is to map the inbound form → qualification → CRM update → follow-up path and remove the manual handoffs.
+
+I’d start with one working end-to-end flow, test duplicates/missing fields, then add routing and alerts.
+
+If useful, I can send a compact implementation outline next.
+`;
+ document.getElementById('score').textContent=s+'/100';
+ document.getElementById('route').textContent=route;
+ document.getElementById('reasons').innerHTML=reasons.map(x=>`<li>${x}</li>`).join('');
+ document.getElementById('fp').textContent=fp;
+ document.getElementById('draft').textContent=draft;
+}
+runLead();
+</script>
+</body>
+</html>
