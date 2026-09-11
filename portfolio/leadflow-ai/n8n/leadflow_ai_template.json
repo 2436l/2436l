@@ -1,0 +1,18 @@
+{
+  "name": "LeadFlow AI - Inbound Qualification Template",
+  "nodes": [
+    {
+      "parameters": {"httpMethod":"POST","path":"leadflow-ai","responseMode":"responseNode","options":{}},
+      "id":"webhook-1","name":"Inbound Lead Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[-760,0]
+    },
+    {
+      "parameters": {"jsCode":"const x=$json.body ?? $json;\nconst lead={name:String(x.name||'').trim(),email:String(x.email||'').trim().toLowerCase(),company:String(x.company||'').trim(),size:Number(x.size||0),budget:Number(x.budget||0),urgency_days:Number(x.urgency_days||999),message:String(x.message||'').trim()};\nconst errs=[]; if(!lead.email.includes('@')) errs.push('invalid_email'); if(!lead.name) errs.push('missing_name');\nlet score=0; const reasons=[];\nif(lead.email && !/(gmail|yahoo|hotmail|outlook)\\./i.test(lead.email)){score+=10;reasons.push('business_email');}\nif(lead.company){score+=10;reasons.push('company');}\nif(lead.size>=2&&lead.size<=100){score+=15;reasons.push('target_size');}\nif(lead.budget>=500){score+=20;reasons.push('budget');}\nif(lead.urgency_days<=14){score+=15;reasons.push('urgent');}\nif(/automat|api|crm|manual|repet|workflow|hubspot|sheet/i.test(lead.message)){score+=20;reasons.push('automation_pain');}\nif(lead.message.length>=60){score+=10;reasons.push('detail');}\nscore=Math.min(100,score);\nconst route=score>=75?'HOT':score>=50?'WARM':'COLD';\nreturn [{json:{...lead,valid:errs.length===0,errors:errs,score,reasons,route,processed_at:new Date().toISOString()}}];"},
+      "id":"code-1","name":"Normalize + Score","type":"n8n-nodes-base.code","typeVersion":2,"position":[-500,0]
+    }
+  ],
+  "connections": {"Inbound Lead Webhook":{"main":[[{"node":"Normalize + Score","type":"main","index":0}]]}},
+  "settings": {"executionOrder":"v1"},
+  "active": false,
+  "meta": {"templateCredsSetupCompleted": false},
+  "tags": []
+}
